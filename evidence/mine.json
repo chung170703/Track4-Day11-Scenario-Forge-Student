@@ -29,7 +29,7 @@
  },
  "world": "town",
  "exposure": 0.04,
- "why": "Xe đạp di chuyển ở mép trong làn E2 (d=-0.2m) bất ngờ lạng sang làn E1 để tránh ổ gà và nắp cống gồ ghề ven đường đoạn x in [-10, 35]m. Theo báo cáo an toàn xe đạp đô thị của CPSC/NHTSA và phân tích quỹ đạo tự nhiên (Johnson et al., 2014; Dozza et al., 2016), tình huống xe đạp lạng ngang đột ngột từ 1.4m đến 2.3m xảy ra khoảng 0.03–0.05 lần mỗi chuyến đi trong đô thị (chọn exposure = 0.04). Gia tốc ngang cực đại của cú lạng đạt 1.7–2.8 m/s², nằm dưới giới hạn bám trượt an toàn của xe đạp (3.0 m/s²), đảm bảo kịch bản khả thi về mặt vật lý.",
+ "why": "Xe đạp đi ở mép trong làn E2 (d = -0.2m) bất ngờ lạng sang làn E1 để tránh nắp cống hoặc ổ gà ven đường trên đoạn x in [-10, 35]m (đoạn đường thẳng trước trạm xe buýt nơi xe ta đang duy trì vận tốc ổn định 10–12.5 m/s). Độ lệch ngang swerve in [1.4, 2.3]m đủ để xe đạp lấn sâu 0.2–0.9m sang làn E1 (làn rộng 3.5m, d=-0.2m cách mép phân làn 1.55m); gia tốc ngang cực đại của cú lạng cosin đạt a_lat = pi^2 * swerve / (2 * swDur^2) = 1.73–2.84 m/s^2, hoàn toàn nằm dưới giới hạn bám trượt an toàn của xe đạp (3.0 m/s^2 theo avsim/studio.py: BIKE_LAT_MAX) nên kịch bản khả thi vật lý. Cự ly kích hoạt trig in [10, 20]m tương ứng 1.0–1.8s trước va chạm, là cự ly người đi xe đạp thường giật mình né vật cản mà không kịp quan sát gương. Tần suất exposure = 0.04 là ước lượng thực nghiệm cho giao thông đô thị: trong một chuyến đi 5–10 km, xác suất gặp xe đạp lạng đột ngột vào tim đường ngay trước mũi xe trong cửa sổ 1–2s ước tính khoảng 1 lần trong 25 chuyến đi (4%).",
  "exact": {
   "planner": [
    [

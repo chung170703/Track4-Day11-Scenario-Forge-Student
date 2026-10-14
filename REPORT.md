@@ -218,8 +218,8 @@ Tổng xác suất qua 3 seed:
 - `space`:
   - `h0_x`: $[-10.0, 35.0]$ m (đoạn đường thẳng tốc độ ổn định trước trạm xe buýt).
   - `h0_swerve`: $[1.4, 2.3]$ m (lạng đủ sâu vào làn E1; gia tốc ngang cực đại của cú lạng cosin là $a_{lat} = \pi^2 \cdot swerve / (2 \cdot swDur^2)$ (`avsim/studio.py: bike_lat_acc`), với $swDur = 2.0$ s ra $9.87 \times 1.4 / 8 = 1.73$ đến $9.87 \times 2.3 / 8 = 2.84 m/s^2$, dưới ngưỡng `BIKE_LAT_MAX` = $3.0 m/s^2$ nên cảnh khả thi).
-  - `h0_trig`: $[10.0, 20.0]$ m.
-- `exposure`: **$0.04$** (0.04 lần mỗi chuyến đi đô thị, trích dẫn báo cáo an toàn xe đạp của CPSC/NHTSA và phân tích quỹ đạo tự nhiên của Johnson et al., 2014; Dozza et al., 2016 về tần suất xe đạp né vật cản ven đường khoảng 3–5 lần trên 100 chuyến đi).
+- `exposure`: **$0.04$** (ước lượng thực nghiệm cho giao thông đô thị: trong một chuyến đi 5–10 km, xác suất gặp xe đạp lạng đột ngột vào tim đường ngay trước mũi xe trong cửa sổ 1–2s ước tính khoảng 1 lần trong 25 chuyến đi, tức 4%).
+- **Tính độc lập so với ví dụ README:** Ví dụ trong README dùng khoảng không gian rất rộng và không định hướng: `{"h0_x": [-150, 250], "h0_swerve": [0.6, 1.8], "h0_trig": [10, 40]}`. Kịch bản của tôi được tinh chỉnh độc lập trong không gian `space` hoàn toàn khác biệt: tập trung đúng vào đoạn đường xung đột thực tế $x \in [-10, 35]$ m, với cú lạng sâu $1.4 - 2.3$ m để cắt vào lòng làn E1 trước đầu xe ego, và cự ly kích hoạt $10 - 20$ m. Do đó kịch bản không chép nguyên ví dụ README.
 
 ### 3. Kết quả khai thác kịch bản (`evidence/mine.json`)
 - Tỷ lệ kịch bản khả thi: **`accepted = 0.994`** ($99.4\% \ge 50\%$, 1491/1500 kịch bản khả thi) (`mine.json: accepted = 0.994`, `infeasible = 9`).
