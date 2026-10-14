@@ -34,14 +34,14 @@ Thị trấn của bạn (`meta.json: _run.town`): **B**
 
 ### Các luật trong `is_feasible` và căn cứ vật lý
 1. **Gia tốc ngang xe chuyển làn ($a_{lat} \le \mu g$):**
-   - Công thức: $a_{lat} = 2 \cdot |cutDs| / cutDur^2 \le \mu \cdot g$ (với $g = 9.81 m/s^2$).
-   - Căn cứ vật lý: Giới hạn vòng tròn ma sát (friction circle) giữa lốp xe và mặt đường theo định luật Coulomb ($F_{lat}^{max} = \mu m g$). Gia tốc chuyển làn ngang không thể vượt quá ma sát mặt đường cho phép; nếu vượt quá, xe sẽ bị trượt lốp, văng đuôi mất kiểm soát.
+   - Công thức: chuyển làn dạng cosin 3,5 m trong `cutDur` giây có gia tốc ngang cực đại $a_{lat} = (\pi / cutDur)^2 \cdot 3.5 / 2$; loại nếu $a_{lat} > \mu \cdot g$ (với $g = 9.81 m/s^2$).
+   - Căn cứ vật lý: Giới hạn vòng tròn ma sát (friction circle) giữa lốp xe và mặt đường theo định luật Coulomb ($F_{lat}^{max} = \mu m g$). Gia tốc chuyển làn ngang không thể vượt quá ma sát mặt đường cho phép; nếu vượt quá, xe sẽ bị trượt lốp, văng đuôi mất kiểm soát. Ví dụ $\mu = 0.5$ cho ngưỡng $4.9 m/s^2$, nên chuyển làn 3,5 m trong dưới ~1,87 s là bất khả thi.
 2. **Gia tốc phanh xe chuyển làn ($cutBrake \le \mu g$):**
    - Căn cứ vật lý: Lực hãm phanh cực đại của xe cũng bị khống chế bởi lực bám ma sát dọc ($a_{brake} \le \mu g$). Xe không thể phanh với gia tốc lớn hơn độ bám của lốp (ví dụ đường trơn $\mu = 0.5$ thì gia tốc phanh tối đa là $4.9 m/s^2$).
 3. **Tốc độ đi bộ của người ($pedV \le 2.5 m/s$):**
    - Căn cứ vật lý: Vận tốc đi bộ bình thường của người dao động từ $1.2 - 1.5 m/s$, bước nhanh/chạy vội tối đa khoảng $2.5 m/s$ (~9 km/h). Vượt quá $2.5 m/s$ biến người đi bộ thành vận động viên chạy nước rút, phi lý trong tình huống người đi bộ sang đường thông thường.
-4. **Vận tốc xe chuyển làn không âm ($cutV \ge 0$):**
-   - Căn cứ vật lý: Xe lưu thông trên làn một chiều chỉ có thể tiến về phía trước, không thể lùi xe trên đường giao thông tốc độ cao.
+4. **Vận tốc xe chuyển làn phải nằm trong $(0, 22]$ m/s (loại nếu $cutV \le 0$ hoặc $cutV > 22$):**
+   - Căn cứ vật lý: Xe chuyển làn trên đường một chiều phải đang tiến về phía trước (không lùi, không đứng yên mà vẫn "chuyển làn"), và 22 m/s (~79 km/h) là trần tốc độ hợp lý của đoạn phố này; trên mức đó không còn là giao thông của thị trấn.
 
 ### Cuộc săn bất khả thi và hệ quả trong CEM
 - **Cuộc săn sinh nhiều kịch bản bất khả thi nhất:** `crosswalk_block` với 14 kịch bản vi phạm (`hunt.json: crosswalk_block.infeasible = 14`), so với `bus_bypass` (3), `cut_in` (4), `rear_ended` (8).
@@ -116,17 +116,17 @@ Tổng xác suất qua 3 seed:
 
 ## 5. Các kiểu thất bại (bước C2 + 3D)
 
-### 1. Kiểu `bus_bypass` (Lách xe buýt đâm người đi bộ)
+### 1. Kiểu `bus_bypass` (xe ta đâm xe C2 đang lách qua xe buýt đỗ)
 
-![Bus Bypass Crash](file:///Users/chung140204/Track4-Day11-Scenario-Forge-Student/evidence/shots/ch9-bus-bypass.jpg)
+![Bus Bypass Crash](evidence/shots/ch9-bus-bypass.jpg)
 
-- **Chuỗi sự kiện:** Xe buýt đỗ tại trạm che khuất tầm nhìn sang lề đường; xe ego lách sang trái vượt qua sườn xe buýt ở tốc độ khoảng 7.5 m/s thì người đi bộ bất ngờ bước ra từ ngay trước mũi xe buýt; khoảng cách quá gần kết hợp góc mù khiến ego phát hiện muộn và đâm trực diện vào người đi bộ tại $t = 12.4$ s (Kịch bản B-01).
+- **Chuỗi sự kiện** (Kịch bản B-01, chạy lại bằng `avsim` với đúng tham số trong `viewer.json`; sự kiện: `ego|C2, kind = contact, t = 12.4 s`, x = 92.9 m): xe buýt đỗ ở x = 106 m; xe C2 phía trước ego đang lách qua xe buýt nên chậm dần (4.8 m/s lúc t = 10.4 s, 2.9 m/s lúc 11.4 s, 1.2 m/s lúc 12.4 s); xe ta vẫn chạy 7.8 m/s lúc 10.4 s, khoảng cách tới C2 co từ ~13 m xuống ~9.5 m rồi ~4.6 m. Ego phanh (còn 5.5 m/s lúc 12.4 s) nhưng muộn, và đâm vào đuôi C2 tại $t = 12.4$ s. Khớp với ảnh: nhãn "va chạm" giữa xe ta (xanh) và xe tím. **Người đi bộ không liên quan** (P1 đứng yên ở x = 122 m). Đúng với luật `label_mode`: ego đâm C2 khi C2 ở x < 112 m và chậm hơn 6 m/s.
 
-### 2. Kiểu `crosswalk_block` (Kẹt trên vạch sang đường đâm người đi bộ)
+### 2. Kiểu `crosswalk_block` (xe dừng nhưng thân xe chắn vạch qua đường)
 
-![Crosswalk Block Crash](file:///Users/chung140204/Track4-Day11-Scenario-Forge-Student/evidence/shots/ch9-crosswalk-block.jpg)
+![Crosswalk Block Crash](evidence/shots/ch9-crosswalk-block.jpg)
 
-- **Chuỗi sự kiện:** Người đi bộ đang qua đường trên vạch sơn; xe ego tiến tới vạch bộ hành nhưng luồng giao thông phía trước bị ách tắc hoặc dừng đột ngột khiến ego không thể hoàn tất việc băng qua nút giao, dẫn tới việc xe đè lên vạch người đi bộ và va chạm với người đi bộ đang đi dở lộ trình tại $t = 20.95$ s (Kịch bản C-01).
+- **Chuỗi sự kiện** (Kịch bản C-01, sự kiện `ego|P1, kind = block, t = 20.95 s`, x = 120.9 m): **không có va chạm**. Người đi bộ P1 ở x = 122 m, ngay mép vạch qua đường; người đi bộ không bao giờ bước vào thân xe nên khi thân xe chắn trước mặt thì P1 đứng lại (vận tốc 0.9 m/s lúc t = 18.95 s, rồi về 0). Xe ta đã dừng hẳn (v = 0 m/s) tại x = 119.7 m từ trước t = 18.95 s, nhưng thân xe nằm trên vạch, chắn lối P1. Planner phanh quá muộn so với vị trí vạch nên dừng sai chỗ; theo luật của lab, việc chắn lối này vẫn tính là thất bại như va chạm. Ảnh chụp ở 20.9 s: xe ta (xanh) nằm trên vạch, người đi bộ đứng cạnh mũi xe.
 
 ### Kiểu không tìm thấy và hiện tượng sụp đổ kiểu (Mode Collapse)
 - **Kiểu cuộc săn không tìm thấy:**
@@ -162,9 +162,9 @@ Tổng xác suất qua 3 seed:
 
 ### Ảnh 3D bóng mờ (Ghost Comparison)
 
-![Ghost Fix Comparison](file:///Users/chung140204/Track4-Day11-Scenario-Forge-Student/evidence/shots/ch9-fix-ghost.jpg)
+![Ghost Fix Comparison](evidence/shots/ch9-fix-ghost.jpg)
 
-- **Minh họa:** Kịch bản B-01 tại $t = 12.4$ s. Bản sửa (xe thật màu xanh) nhận diện chướng ngại vật từ xa và dừng lại an toàn trước người đi bộ, trong khi policy gốc (bóng mờ màu xám) phản ứng muộn và lao thẳng vào người đi bộ.
+- **Minh họa:** Kịch bản B-01 tại $t = 12.4$ s. Xe đặc đâm vào đuôi C2 (nhãn "va chạm") là policy gốc `cutinLat = 2.15` (chạy lại bằng `avsim`: sự kiện `ego|C2`, x = 90.6 m, v = 5.5 m/s). Bóng mờ phía sau là bản sửa `cutinLat = 3.0`: cùng kịch bản, **không có va chạm nào** (`events = []`), ở $t = 12.4$ s nó chỉ còn 1.9 m/s tại x = 86.3 m, cách C2 (x = 95.2 m) khoảng 9 m. Bản sửa phanh sớm hơn (5.3 m/s lúc 11.4 s so với 7.3 m/s của policy gốc) vì ngưỡng ngang 3.0 m khiến planner coi C2, xe đang lách ở mép làn, là xe phải bám/nhường sớm hơn ngưỡng 2.15 m.
 
 ### Núm chỉnh "nghe thì an toàn" nhưng phản tác dụng
 - **Núm:** `cautionV = 5.0` (giảm tốc độ qua khu vực xe buýt từ $7.5 m/s$ xuống $5.0 m/s$) (`fix.json: table[0]`).
@@ -172,8 +172,8 @@ Tổng xác suất qua 3 seed:
   - Tỷ lệ thất bại `fail` tăng gần gấp đôi từ $4.915 \times 10^{-4}$ lên **$8.587 \times 10^{-4}$**!
   - Số khung hình phanh gấp `harsh` tăng vọt từ 7.62 lên **13.22 frames**.
   - Quãng đường di chuyển `progress` sụt giảm nghiêm trọng từ 218.84 m xuống chỉ còn **172.86 m**.
-- **Giải thích bằng cách thế giới phản ứng:**
-  Khi hạ `cautionV` xuống 5.0 m/s, xe ego bò quá chậm qua cạnh xe buýt, làm kéo dài thời gian phơi nhiễm (exposure duration) của xe trong vùng điểm mù của người đi bộ. Xe đi chậm khiến người đi bộ từ đầu xe buýt bước ra đâm đúng vào hông hoặc đầu xe ego, trong khi ở tốc độ bình thường ego đã dứt điểm vượt qua vị trí đó từ trước. Đồng thời, việc rà phanh bò chậm bất ngờ kích động các xe bám đuôi phía sau phản ứng phanh gấp liên tục.
+- **Giải thích bằng cách thế giới phản ứng** (đây là giải thích dựa trên số liệu `fix.json` và cơ chế của kiểu `bus_bypass`; tôi chưa tách riêng từng va chạm của núm này để kiểm chứng):
+  Kiểu `bus_bypass` là ego đâm C2 khi C2 đang bò qua xe buýt đỗ (x < 112 m, v < 6 m/s). Thế giới là phản ứng, nên đổi tốc độ của ego cũng đổi thời điểm ego gặp C2 và xe bám đuôi TG: ego bò 5 m/s thì ở lại lâu hơn trong đoạn C2 đang chậm và chen chúc quanh xe buýt, và TG (IDM) tiến sát phía sau, nên số khung hình phanh gấp tăng 7.62 → 13.22 và `fail` tăng gần gấp đôi, trong khi ego vẫn chưa tách khỏi vùng nguy hiểm. Núm "chậm hơn cho an toàn" cũng làm mất quãng đường (218.84 → 172.86 m). Ngược lại `cutinLat` đổi cách ego nhìn C2 (coi nó là xe phải nhường từ sớm hơn) nên chặn đúng cơ chế va chạm: `fail` 4.9e-4 → 8.4e-8 mà `progress` gần như không đổi (218.89 m).
 
 ---
 
@@ -183,13 +183,13 @@ Tổng xác suất qua 3 seed:
 
 1. **Tỷ lệ người đi bộ quan sát đường trước khi bước qua đầu xe buýt (`pedLook`):**
    - *Dữ liệu thật thay thế & Nguồn:* Dữ liệu quan sát hành vi tự nhiên của người đi bộ tại trạm xe buýt từ camera giao thông hoặc tập dữ liệu mở JAAD (Joint Attention for Autonomous Driving) và PIE (Pedestrian Intention Estimation).
-   - *Hướng sai lệch:* Trong mô phỏng, tỷ lệ người nhìn đường chỉ khoảng 20–45% ($p_{bin}$ thấp), phần lớn cắm mặt đi thẳng. Ngoài đời thực, đa số người đi bộ đều ngó đầu qua sườn xe buýt để quan sát trước khi bước tiếp (`pedLook = 1`). Do đó, con số rủi ro của mô phỏng đang **bị thổi phồng cao hơn thực tế** (quá bi quan / pessimistic).
+   - *Hướng sai lệch:* Trong `avsim/space.py`, `pedLook` có xác suất tự nhiên 0.85: mô phỏng giả định 85% người đi bộ ngó qua sườn xe buýt trước khi bước ra, chỉ 15% đi thẳng không nhìn. Nếu ngoài đời tỷ lệ nhìn thấp hơn 85% (người cúi đầu vào điện thoại, đang vội, trẻ em), nhiều người hơn bước ra bất ngờ, nên con số rủi ro `crosswalk_block` của mô phỏng **bị đánh giá thấp hơn thực tế** (quá lạc quan / optimistic). Chiều ngược lại chỉ đúng nếu thực tế ai cũng nhìn.
 2. **Hệ số ma sát mặt đường ($\mu \in \{0.5, 0.8\}$):**
    - *Dữ liệu thật thay thế & Nguồn:* Dữ liệu đo ma sát bánh xe từ cảm biến phanh ABS/ESP của các đội xe thương phẩm (fleet telematics), kết hợp dữ liệu khí tượng bề mặt đường (mưa, dầu mỡ, băng giá).
-   - *Hướng sai lệch:* Mô phỏng giả định đường lý tưởng $\mu = 0.8$ hoặc ướt đều $\mu = 0.5$. Ngoài đời, vũng dầu, nắp cống ướt hoặc lá cây mục có thể làm $\mu < 0.3$. Nếu mô phỏng giả định $\mu$ quá cao, quãng đường phanh tính toán sẽ ngắn hơn thực tế, khiến con số rủi ro của mô phỏng **bị đánh giá thấp hơn thực tế** (quá lạc quan / optimistic).
+   - *Hướng sai lệch:* Mô phỏng chỉ có hai mức: đường khô $\mu = 0.8$ (80% số chuyến) và đường ướt $\mu = 0.5$ (`wet` = 0.20). Ngoài đời, vũng dầu, nắp cống ướt hoặc lá cây mục có thể làm $\mu < 0.3$, và tỷ lệ đường ướt phụ thuộc khí hậu từng nơi. Nếu mô phỏng giả định $\mu$ quá cao hoặc đường ướt quá ít, quãng đường phanh tính toán sẽ ngắn hơn thực tế, khiến con số rủi ro của mô phỏng **bị đánh giá thấp hơn thực tế** (quá lạc quan / optimistic).
 3. **Phân phối khoảng cách nhận diện xe chuyển làn (`cutGap`, `tgT`):**
    - *Dữ liệu thật thay thế & Nguồn:* Tập dữ liệu quỹ đạo giao thông tự nhiên quy mô lớn như highD, exiD hoặc Waymo Open Dataset.
-   - *Hướng sai lệch:* Ngoài đời, tài xế chỉ tạt đầu khi nhìn thấy khoảng trống đủ an toàn (gap acceptance động). Mô phỏng lấy mẫu tham số tạt đầu có thể sinh ra các tình huống ép làn cực đoan hơn tự nhiên, làm con số xác suất va chạm bị **thiên lệch cao hơn thực tế**.
+   - *Hướng sai lệch:* Trong `space.py`, `cutGap` là log-chuẩn với trung vị 12 m (cắt trong 1–60 m) và `tgT` đều trong 0.6–1.6 s, độc lập với nhau và với tốc độ. Ngoài đời, khoảng trống tài xế chấp nhận phụ thuộc vào tốc độ tương đối và mật độ giao thông (gap acceptance động), và khoảng cách bám đuôi thay đổi theo tình huống. Việc lấy mẫu độc lập có thể sinh nhiều khoảng trống nhỏ (vài mét) hơn thực tế, nên con số xác suất va chạm có thể **thiên lệch cao hơn thực tế** (bi quan). Đây là suy đoán về hướng; cần số liệu highD/exiD để xác nhận.
 
 ---
 
@@ -217,7 +217,7 @@ Tổng xác suất qua 3 seed:
 ### 2. Giả định không gian và tần suất (`hazard.json`)
 - `space`:
   - `h0_x`: $[-10.0, 35.0]$ m (đoạn đường thẳng tốc độ ổn định trước trạm xe buýt).
-  - `h0_swerve`: $[1.4, 2.3]$ m (lạng đủ sâu vào làn E1 nhưng gia tốc ngang $a_{lat} = 2 \cdot swerve / swDur^2 \le 2 \times 2.3 / 4 = 1.15 m/s^2 < 3.0 m/s^2$, đảm bảo xe đạp không trượt ngã).
+  - `h0_swerve`: $[1.4, 2.3]$ m (lạng đủ sâu vào làn E1; gia tốc ngang cực đại của cú lạng cosin là $a_{lat} = \pi^2 \cdot swerve / (2 \cdot swDur^2)$ (`avsim/studio.py: bike_lat_acc`), với $swDur = 2.0$ s ra $9.87 \times 1.4 / 8 = 1.73$ đến $9.87 \times 2.3 / 8 = 2.84 m/s^2$, dưới ngưỡng `BIKE_LAT_MAX` = $3.0 m/s^2$ nên cảnh khả thi).
   - `h0_trig`: $[10.0, 20.0]$ m.
 - `exposure`: **$0.04$** (0.04 lần mỗi chuyến đi đô thị, trích dẫn báo cáo an toàn xe đạp của CPSC/NHTSA và phân tích quỹ đạo tự nhiên của Johnson et al., 2014; Dozza et al., 2016 về tần suất xe đạp né vật cản ven đường khoảng 3–5 lần trên 100 chuyến đi).
 
@@ -246,14 +246,14 @@ Tổng xác suất qua 3 seed:
 - **Khái niệm:**
   - `avoidable`: Va chạm mà một tài xế mẫu mực (oracle) có thể tránh được nếu biết trước thời điểm nguy cơ phát sinh (`fire_t`) và phanh tối đa ($a = -\mu g$).
   - `unavoidable`: Va chạm bất khả kháng do vi phạm khoảng cách vật lý tối thiểu (phanh tối đa ngay từ đầu vẫn đâm).
-  - `unattributed`: Va chạm thứ cấp với các đối tượng khác.
+  - `unattributed`: Va chạm xảy ra khi chưa rắc rối nào bắt đầu, tức một va chạm thường của thị trấn, không nói gì về rắc rối xe đạp. Ở bản sửa có 2 va chạm như vậy.
 - **Vì sao là chuẩn lạc quan (nói đủ cả hai hướng):**
   1. *Đếm nhiều hơn (quá lạc quan về khả năng của planner thật):* Người lái mẫu mực có thông tin "toàn tri", biết trước tích tắc rắc rối bắt đầu và đạp phanh khẩn cấp với gia tốc cực đại ngay lập tức. Ngoài đời, một planner thật không thể đạp phanh giật cục liên tục mỗi khi thấy xe đạp, dẫn đến việc chuẩn này coi mọi pha xử lý không phanh kịp của planner là "lỗi", làm **thổi phồng số va chạm tránh được**.
   2. *Đếm ít đi (quá bi quan về phương án xử lý):* Bài test oracle chỉ thử nghiệm duy nhất hành vi **phanh dọc**, hoàn toàn không xét phương án **đánh lái tránh né** (lateral swerve). Ngoài đời, khi làn đường còn rộng, con người hoặc planner thông minh có thể lách nhẹ sang trái để vượt qua an toàn mà không cần dừng xe. Việc cấm đánh lái khiến một số kịch bản bị phán quyết sai thành "không thể tránh".
 
 ### 5. Hình ảnh lúc va chạm (Chương 10)
 
-![Custom Hazard Bike Swerve Crash](file:///Users/chung140204/Track4-Day11-Scenario-Forge-Student/evidence/shots/ch10-custom-hazard.jpg)
+![Custom Hazard Bike Swerve Crash](evidence/shots/ch10-custom-hazard.jpg)
 
 - **Minh họa:** Kịch bản GB-01 tại thời điểm $t = 7.0$ s. Xe đạp H0 lạng từ mép làn E2 sang làn E1 của xe ego; ego không kịp dừng và xảy ra va chạm.
 
